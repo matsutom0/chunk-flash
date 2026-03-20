@@ -3,22 +3,37 @@
 import { useState, useEffect, useRef } from "react";
 
 // ─── Sentence banks ───
-const SENTENCES_A1A2 = [
-  { id: "a1-01", level: "A1-A2", chunks: ["I need", "a glass of water.", "Can you help me?"], q: "この人は何を求めている？", options: ["食べ物がほしい", "水を一杯ほしい", "手伝いを断っている"], answer: 1 },
-  { id: "a1-02", level: "A1-A2", chunks: ["The bus", "stops here", "at eight o'clock."], q: "バスについて何がわかる？", options: ["8時にここでバスが止まる", "8時にバスが出発する", "ここにバスは止まらない"], answer: 0 },
-  { id: "a1-03", level: "A1-A2", chunks: ["She lives", "near the station", "with her family."], q: "彼女はどこに住んでいる？", options: ["一人でどこか遠くに住んでいる", "家族と駅の近くに住んでいる", "駅の中で働いている"], answer: 1 },
-  { id: "a1-04", level: "A1-A2", chunks: ["He works", "at a hospital", "every day."], q: "彼の仕事は？", options: ["毎日病院で働いている", "毎日病院に通院している", "週に一度病院に行く"], answer: 0 },
-  { id: "a1-05", level: "A1-A2", chunks: ["We are going", "to the park", "this afternoon."], q: "今日の午後の予定は？", options: ["今日の午後は家にいる", "今日の午後は公園に行く", "今日の朝は公園に行く"], answer: 1 },
-  { id: "a1-06", level: "A1-A2", chunks: ["My sister", "is studying", "for her exam."], q: "姉（妹）は今何をしている？", options: ["試験を受けている", "試験勉強をしている", "試験が終わった"], answer: 1 },
-  { id: "a1-07", level: "A1-A2", chunks: ["The shop", "opens at nine", "and closes at six."], q: "その店の営業時間は？", options: ["9時から18時まで", "6時から9時まで", "終日営業"], answer: 0 },
-  { id: "a1-08", level: "A1-A2", chunks: ["Can you", "call me back", "after five o'clock?"], q: "この人は何を求めている？", options: ["5時前に電話してほしい", "5時以降に折り返し電話してほしい", "電話に出てほしい"], answer: 1 },
-  { id: "a1-09", level: "A1-A2", chunks: ["I usually", "have breakfast", "before going to work."], q: "この人の習慣は？", options: ["仕事後に朝食を食べる", "朝食は食べない", "仕事前に朝食を食べる"], answer: 2 },
-  { id: "a1-10", level: "A1-A2", chunks: ["The weather", "is very cold", "today."], q: "今日の天気は？", options: ["今日はとても暑い", "今日はとても寒い", "今日は雨が降っている"], answer: 1 },
-  { id: "a1-11", level: "A1-A2", chunks: ["They are waiting", "for the train", "on the platform."], q: "彼らはどこで何をしている？", options: ["電車の中で座っている", "ホームで電車を待っている", "駅の外で話している"], answer: 1 },
-  { id: "a1-12", level: "A1-A2", chunks: ["Please", "leave a message", "after the tone."], q: "何をするよう言っている？", options: ["電話を切るよう言っている", "発信音の後にメッセージを残すよう言っている", "もう一度かけ直すよう言っている"], answer: 1 },
-  { id: "a1-13", level: "A1-A2", chunks: ["There is", "a coffee shop", "on the second floor."], q: "コーヒーショップはどこにある？", options: ["1階にある", "2階にある", "地下にある"], answer: 1 },
-  { id: "a1-14", level: "A1-A2", chunks: ["He is not here", "right now.", "Can I take a message?"], q: "この発言の要点は？", options: ["彼は今ここにいない。伝言を預かろうか？", "彼は今ここにいる", "後でかけ直してください"], answer: 0 },
-  { id: "a1-15", level: "A1-A2", chunks: ["Turn left", "at the traffic light", "and go straight."], q: "どう進む？", options: ["信号を右折してまっすぐ行く", "信号を左折してまっすぐ行く", "信号でUターンする"], answer: 1 },
+const SENTENCES_A2 = [
+  { id: "a2-01", level: "A2", chunks: ["The bus", "stops here", "at eight o'clock."], q: "バスについて何がわかる？", options: ["8時にここでバスが止まる", "8時にバスが出発する", "ここにバスは止まらない"], answer: 0 },
+  { id: "a2-02", level: "A2", chunks: ["Can you", "call me back", "after five o'clock?"], q: "この人は何を求めている？", options: ["5時前に電話してほしい", "5時以降に折り返し電話してほしい", "電話に出てほしい"], answer: 1 },
+  { id: "a2-03", level: "A2", chunks: ["He is not here", "right now.", "Can I take a message?"], q: "この発言の要点は？", options: ["彼は今ここにいない。伝言を預かろうか？", "彼は今ここにいる", "後でかけ直してください"], answer: 0 },
+  { id: "a2-04", level: "A2", chunks: ["There is", "a coffee shop", "on the second floor."], q: "コーヒーショップはどこにある？", options: ["1階にある", "2階にある", "地下にある"], answer: 1 },
+  { id: "a2-05", level: "A2", chunks: ["Turn left", "at the traffic light", "and go straight."], q: "どう進む？", options: ["信号を右折してまっすぐ行く", "信号を左折してまっすぐ行く", "信号でUターンする"], answer: 1 },
+  { id: "a2-06", level: "A2", chunks: ["She didn't come", "to the meeting", "because she was sick."], q: "彼女はなぜ会議に来なかった？", options: ["遅刻したから", "体調が悪かったから", "会議を知らなかったから"], answer: 1 },
+  { id: "a2-07", level: "A2", chunks: ["I'm going to visit", "my grandparents", "next weekend."], q: "来週末の予定は？", options: ["祖父母を訪ねる", "旅行に行く", "家にいる"], answer: 0 },
+  { id: "a2-08", level: "A2", chunks: ["We have to submit", "the form", "by the end of the week."], q: "いつまでに何をしなければならない？", options: ["今週中にフォームを提出する", "来週末にレポートを出す", "月末に書類を確認する"], answer: 0 },
+  { id: "a2-09", level: "A2", chunks: ["He couldn't find", "his keys", "this morning."], q: "今朝何があった？", options: ["彼は鍵を忘れた", "彼は今朝鍵が見つからなかった", "彼は鍵を失くした"], answer: 1 },
+  { id: "a2-10", level: "A2", chunks: ["The concert", "starts at seven", "and ends at nine thirty."], q: "コンサートの時間は？", options: ["7時から9時半まで", "7時半から9時まで", "7時から10時まで"], answer: 0 },
+  { id: "a2-11", level: "A2", chunks: ["Can you tell me", "how to get", "to the nearest station?"], q: "何を聞いている？", options: ["最寄り駅までの行き方", "電車の時刻表", "駅の場所の確認"], answer: 0 },
+  { id: "a2-12", level: "A2", chunks: ["They moved", "to a new apartment", "last spring."], q: "彼らについて何がわかる？", options: ["去年の春に新しいアパートに引っ越した", "春に引っ越す予定だ", "以前から同じアパートに住んでいる"], answer: 0 },
+  { id: "a2-13", level: "A2", chunks: ["I forgot", "to bring", "my umbrella today."], q: "この人は何を忘れた？", options: ["財布を忘れた", "傘を持ってくるのを忘れた", "今日の予定を忘れた"], answer: 1 },
+  { id: "a2-14", level: "A2", chunks: ["I'd like to book", "a table for two", "this evening."], q: "この人は何をしようとしている？", options: ["今夜2人分の席を予約しようとしている", "今夜2時間のプランを聞いている", "2人分の料理を注文している"], answer: 0 },
+  { id: "a2-15", level: "A2", chunks: ["The flight", "was delayed", "by two hours."], q: "フライトはどうなった？", options: ["2時間早まった", "2時間遅れた", "キャンセルされた"], answer: 1 },
+  { id: "a2-16", level: "A2", chunks: ["She called me", "to say", "she was running late."], q: "なぜ電話してきた？", options: ["遅れると伝えるためだった", "待ち合わせ場所を確認するためだった", "予定をキャンセルするためだった"], answer: 0 },
+  { id: "a2-17", level: "A2", chunks: ["You should check", "the schedule", "before you leave."], q: "何をするよう勧めている？", options: ["出発前にスケジュールを確認すること", "スケジュールを作成してから出発すること", "出発後にスケジュールを見直すこと"], answer: 0 },
+  { id: "a2-18", level: "A2", chunks: ["He sent me", "an email", "asking about the price."], q: "彼はなぜメールを送った？", options: ["価格について問い合わせるため", "注文を確認するため", "配送日を変更するため"], answer: 0 },
+  { id: "a2-19", level: "A2", chunks: ["There are no seats", "left on the train.", "Would you like to wait?"], q: "状況と質問の要点は？", options: ["電車に空席がなく、待つか聞いている", "電車が来ないので、他の手段を勧めている", "座席を予約するよう提案している"], answer: 0 },
+  { id: "a2-20", level: "A2", chunks: ["The package", "arrived this morning,", "but the box was damaged."], q: "荷物の状況は？", options: ["今朝届いたが、箱が壊れていた", "今朝発送されたが、遅れている", "箱は壊れていたが、中身は無事だった"], answer: 0 },
+  { id: "a2-21", level: "A2", chunks: ["Could you speak", "a little more slowly?", "I didn't catch that."], q: "何をお願いしている？", options: ["もう少しゆっくり話してほしい", "もう一度大きな声で言ってほしい", "別の言い方で説明してほしい"], answer: 0 },
+  { id: "a2-22", level: "A2", chunks: ["The library", "is closed", "on Sundays and public holidays."], q: "図書館について何がわかる？", options: ["日曜と祝日は休館している", "日曜だけ特別時間で開いている", "祝日のみ開館している"], answer: 0 },
+  { id: "a2-23", level: "A2", chunks: ["I've already paid", "for the ticket,", "so I don't need to pay again."], q: "この人の状況は？", options: ["チケットの支払いをまだしていない", "すでに支払い済みなので再度支払う必要はない", "チケット代を返金してもらった"], answer: 1 },
+  { id: "a2-24", level: "A2", chunks: ["She was surprised", "to hear", "that the event had been cancelled."], q: "彼女はなぜ驚いた？", options: ["イベントがキャンセルになったと聞いたから", "イベントの日程が変更されたから", "イベントに招待されなかったから"], answer: 0 },
+  { id: "a2-25", level: "A2", chunks: ["We need to hurry", "or we'll miss", "the last bus home."], q: "なぜ急がなければならない？", options: ["最終バスに乗り遅れてしまうから", "タクシーがすぐ来るから", "終電の時間が近いから"], answer: 0 },
+  { id: "a2-26", level: "A2", chunks: ["The meeting", "has been moved", "from Monday to Wednesday."], q: "会議について何が変わった？", options: ["月曜から水曜に変更された", "水曜から月曜に変更された", "月曜に追加された"], answer: 0 },
+  { id: "a2-27", level: "A2", chunks: ["I haven't decided", "where to go", "for my vacation yet."], q: "この人の状況は？", options: ["休暇の行き先をまだ決めていない", "すでに旅行先を予約した", "休暇をキャンセルした"], answer: 0 },
+  { id: "a2-28", level: "A2", chunks: ["He apologized", "for being late", "to the meeting."], q: "彼は何をした？", options: ["会議に遅刻したことを謝った", "会議を欠席する理由を説明した", "会議を早退することを告げた"], answer: 0 },
+  { id: "a2-29", level: "A2", chunks: ["The nearest ATM", "is two blocks away,", "near the post office."], q: "ATMはどこにある？", options: ["2ブロック先の郵便局付近", "郵便局の中", "1ブロック先の角"], answer: 0 },
+  { id: "a2-30", level: "A2", chunks: ["I'll call you back", "as soon as", "I finish this meeting."], q: "いつ折り返し電話する？", options: ["会議が終わったらすぐ折り返す", "今すぐ折り返す", "明日の朝折り返す"], answer: 0 },
 ];
 
 const SENTENCES_B1 = [
@@ -42,9 +57,24 @@ const SENTENCES_B1 = [
   { id: "b1-18", level: "B1", chunks: ["Would you mind", "lowering your voice?", "Some people", "are trying to concentrate."], q: "この発言の目的は？", options: ["声を大きくするよう頼んでいる", "静かにするよう頼んでいる", "部屋から出るよう求めている"], answer: 1 },
   { id: "b1-19", level: "B1", chunks: ["The survey results", "suggest that", "most customers", "prefer online shopping."], q: "調査結果が示していることは？", options: ["ほとんどの顧客は店舗を好む", "ほとんどの顧客はオンラインショッピングを好む", "顧客の意見は二分されている"], answer: 1 },
   { id: "b1-20", level: "B1", chunks: ["He was unable", "to attend the meeting", "due to", "a prior commitment."], q: "彼が会議に出席できなかった理由は？", options: ["他に先約があったから", "会議の時間を忘れたから", "体調不良だったから"], answer: 0 },
+  { id: "b1-21", level: "B1", chunks: ["She's been working", "on the same project", "for the past", "six months."], q: "彼女の状況は？", options: ["6ヶ月前にプロジェクトを終えた", "過去6ヶ月間同じプロジェクトに取り組んでいる", "6ヶ月後にプロジェクトが始まる"], answer: 1 },
+  { id: "b1-22", level: "B1", chunks: ["Unless we leave now,", "we're going to miss", "the last train", "home."], q: "今すぐ出発しないとどうなる？", options: ["終電に乗り遅れる", "次の電車に乗れる", "タクシーを使う必要がある"], answer: 0 },
+  { id: "b1-23", level: "B1", chunks: ["He was promoted", "to senior manager", "after only", "two years with the company."], q: "彼について何がわかる？", options: ["2年間シニアマネージャーとして働いてきた", "入社わずか2年で上級管理職に昇進した", "2年後にシニアマネージャーになる予定だ"], answer: 1 },
+  { id: "b1-24", level: "B1", chunks: ["I've been meaning", "to reply to your email,", "but I've been", "incredibly busy lately."], q: "この人の状況は？", options: ["忙しくてメールの返信ができていなかった", "メールを受け取っていないと言っている", "すぐにメールを返信するつもりだった"], answer: 0 },
+  { id: "b1-25", level: "B1", chunks: ["Could you let me know", "when you're free", "for a quick call", "sometime this week?"], q: "何を求めている？", options: ["今週中に短い電話のために都合を教えてほしい", "今週の会議のスケジュールを共有してほしい", "電話番号を教えてほしい"], answer: 0 },
+  { id: "b1-26", level: "B1", chunks: ["The presentation", "went much better", "than expected,", "despite the technical issues."], q: "プレゼンについて何がわかる？", options: ["技術的な問題で失敗だった", "技術的な問題はあったが予想以上にうまくいった", "技術的な問題が原因で期待通りだった"], answer: 1 },
+  { id: "b1-27", level: "B1", chunks: ["It's essential", "that all staff", "complete the training", "before the end of the month."], q: "全スタッフへの要件は？", options: ["月末までに研修を完了すること", "来月から研修が始まること", "研修は任意であること"], answer: 0 },
+  { id: "b1-28", level: "B1", chunks: ["As far as I know,", "the project", "is still on schedule", "to be delivered by June."], q: "プロジェクトの状況は？", options: ["6月までの納期で予定通り進んでいる", "6月の納期に遅れが生じている", "6月に新しいプロジェクトが始まる"], answer: 0 },
+  { id: "b1-29", level: "B1", chunks: ["I wasn't aware", "that the deadline", "had been changed", "to next Tuesday."], q: "この人が知らなかったことは？", options: ["締め切りが来週火曜日に変更されたこと", "締め切りが来週火曜日に設定されたこと", "プロジェクトが来週火曜日に終了すること"], answer: 0 },
+  { id: "b1-30", level: "B1", chunks: ["The client", "has requested", "a full refund", "due to the delay in delivery."], q: "クライアントが求めていることは？", options: ["配送の遅れを理由に全額返金を求めている", "配送を早めるよう求めている", "遅延の理由について説明を求めている"], answer: 0 },
+  { id: "b1-31", level: "B1", chunks: ["We'd appreciate it", "if you could confirm", "your attendance", "by the end of this week."], q: "何を求めている？", options: ["今週末までに出席確認をしてほしい", "今週末に出席してほしい", "今週末に確認書を送ってほしい"], answer: 0 },
+  { id: "b1-32", level: "B1", chunks: ["The report", "needs to be reviewed", "by at least two people", "before it's submitted."], q: "レポート提出前に必要なことは？", options: ["少なくとも2人にレビューしてもらうこと", "2回以上書き直すこと", "2人以上のサインをもらうこと"], answer: 0 },
+  { id: "b1-33", level: "B1", chunks: ["I'm not sure", "whether the budget", "will be approved", "in time for the project."], q: "この人の懸念は？", options: ["予算がプロジェクトに間に合うよう承認されるか不確か", "プロジェクトの予算が足りないかもしれない", "予算の承認が必要かどうかわからない"], answer: 0 },
+  { id: "b1-34", level: "B1", chunks: ["The new software", "is designed to", "automate tasks", "that currently take hours to complete."], q: "新しいソフトウェアの目的は？", options: ["現在何時間もかかる作業を自動化するため", "業務の記録を効率的に管理するため", "スタッフのトレーニング時間を短縮するため"], answer: 0 },
+  { id: "b1-35", level: "B1", chunks: ["She mentioned", "that she'd be happy", "to take on", "additional responsibilities."], q: "彼女は何を言った？", options: ["追加の責任を喜んで引き受けると言った", "責任の増加に難色を示した", "追加の給与を要求した"], answer: 0 },
 ];
 
-const ALL_SENTENCES = [...SENTENCES_A1A2, ...SENTENCES_B1];
+const ALL_SENTENCES = [...SENTENCES_A2, ...SENTENCES_B1];
 
 const SPEEDS = [
   { label: "ゆっくり", ms: 1800, emoji: "🐢" },
@@ -152,7 +182,7 @@ function getSRSStats(level, srs) {
 
 export default function ChunkFlash() {
   const [phase, setPhase] = useState(P.HOME);
-  const [level, setLevel] = useState(null);   // "A1-A2" | "B1"
+  const [level, setLevel] = useState(null);   // "A2" | "B1"
   const [spd, setSpd] = useState(1);
   const [pool, setPool] = useState([]);
   const [ci, setCi] = useState(0);
@@ -447,10 +477,10 @@ ${JSON.stringify(recent, null, 2)}`;
         <div style={S.section}>
           <SLabel>レベル</SLabel>
           <div style={S.levelRow}>
-            <button onClick={() => setLevel("A1-A2")} style={{ ...S.levelBtn, ...(level === "A1-A2" ? S.levelBtnOn : {}) }}>
-              <span style={S.levelBadge}>A1–A2</span>
-              <span style={S.levelName}>Versant A1-A2</span>
-              <span style={S.levelHint}>入門・基礎レベル</span>
+            <button onClick={() => setLevel("A2")} style={{ ...S.levelBtn, ...(level === "A2" ? S.levelBtnOn : {}) }}>
+              <span style={S.levelBadge}>A2</span>
+              <span style={S.levelName}>Versant A2</span>
+              <span style={S.levelHint}>初中級レベル</span>
             </button>
             <button onClick={() => setLevel("B1")} style={{ ...S.levelBtn, ...(level === "B1" ? S.levelBtnOn : {}) }}>
               <span style={S.levelBadge}>B1</span>
