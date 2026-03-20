@@ -1,26 +1,50 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 
-// ─── Sentence bank ───
-const SENTENCES = [
-  { chunks: ["The manager", "asked the team", "to finish the report", "by Friday."], q: "マネージャーはチームに何を頼んだ？", options: ["金曜までにレポートを完成させること", "チームのメンバーを金曜に集めること", "レポートの内容を金曜に確認すること"], answer: 0 },
-  { chunks: ["She decided", "to take a break", "after working", "for three hours."], q: "彼女はなぜ休憩を取った？", options: ["疲れていたから", "3時間働いた後だったから", "上司に言われたから"], answer: 1 },
-  { chunks: ["The train", "to Tokyo", "departs", "at nine fifteen."], q: "この文の要点は？", options: ["東京行きの電車が9:15に出発する", "東京から9:15に電車が到着する", "9:15に東京で電車に乗り換える"], answer: 0 },
-  { chunks: ["Please send", "the document", "to the client", "before the meeting."], q: "何をいつまでにする？", options: ["会議後にクライアントに連絡する", "会議前にクライアントに書類を送る", "書類を会議中に確認する"], answer: 1 },
-  { chunks: ["He has been", "living in Osaka", "for about", "five years."], q: "この文が伝えていることは？", options: ["彼は5年前に大阪を離れた", "彼は約5年間大阪に住んでいる", "彼は5年後に大阪に引っ越す"], answer: 1 },
-  { chunks: ["The new policy", "will be applied", "to all employees", "starting next month."], q: "新しいポリシーについて正しいのは？", options: ["先月から一部の社員に適用された", "来月から全社員に適用される", "来月から新入社員のみに適用される"], answer: 1 },
-  { chunks: ["Could you", "explain the difference", "between these two", "proposals?"], q: "話し手は何を求めている？", options: ["2つの提案の違いの説明", "2つの提案のどちらがいいかの判断", "新しい提案の作成"], answer: 0 },
-  { chunks: ["We should", "consider the budget", "before making", "a final decision."], q: "この文の主張は？", options: ["予算を増やすべきだ", "最終決定の前に予算を考慮すべきだ", "予算の決定を先送りすべきだ"], answer: 1 },
-  { chunks: ["The conference", "was attended", "by more than", "two hundred people."], q: "会議について何がわかる？", options: ["200人以上が参加した", "200人が招待された", "200人未満の参加だった"], answer: 0 },
-  { chunks: ["I need to", "pick up my daughter", "from school", "at three o'clock."], q: "話し手は何をしなければならない？", options: ["3時に学校に娘を送る", "3時に学校に娘を迎えに行く", "3時に娘と学校に行く"], answer: 1 },
-  { chunks: ["The restaurant", "on the corner", "is known for", "its fresh seafood."], q: "角のレストランの特徴は？", options: ["新鮮なシーフードで知られている", "角に新しくオープンした", "シーフード以外のメニューが豊富"], answer: 0 },
-  { chunks: ["If it rains", "tomorrow morning,", "we will postpone", "the outdoor event."], q: "この文が意味していることは？", options: ["明日雨なら屋外イベントを延期する", "明日の朝イベントが中止になった", "雨でも屋外イベントは実施する"], answer: 0 },
-  { chunks: ["The company", "is planning to", "open a new office", "in Singapore."], q: "会社の計画は？", options: ["シンガポールのオフィスを閉鎖する", "シンガポールに新しいオフィスを開く", "シンガポールから本社を移転する"], answer: 1 },
-  { chunks: ["Students who", "submitted their essays", "before the deadline", "received extra credit."], q: "追加単位をもらえたのは誰？", options: ["全ての学生", "締切前にエッセイを提出した学生", "エッセイを再提出した学生"], answer: 1 },
-  { chunks: ["Despite the delay,", "the project", "was completed", "within the original budget."], q: "プロジェクトについて何がわかる？", options: ["遅延があったが当初の予算内で完了した", "遅延のため予算が超過した", "予算内だったが未完成だった"], answer: 0 },
-  { chunks: ["The doctor", "recommended that", "he should exercise", "at least three times a week."], q: "医者の勧めは？", options: ["週に少なくとも3回運動すること", "3週間は運動を控えること", "毎日3時間運動すること"], answer: 0 },
+// ─── Sentence banks ───
+const SENTENCES_A1A2 = [
+  { id: "a1-01", level: "A1-A2", chunks: ["I need", "a glass of water.", "Can you help me?"], q: "この人は何を求めている？", options: ["食べ物がほしい", "水を一杯ほしい", "手伝いを断っている"], answer: 1 },
+  { id: "a1-02", level: "A1-A2", chunks: ["The bus", "stops here", "at eight o'clock."], q: "バスについて何がわかる？", options: ["8時にここでバスが止まる", "8時にバスが出発する", "ここにバスは止まらない"], answer: 0 },
+  { id: "a1-03", level: "A1-A2", chunks: ["She lives", "near the station", "with her family."], q: "彼女はどこに住んでいる？", options: ["一人でどこか遠くに住んでいる", "家族と駅の近くに住んでいる", "駅の中で働いている"], answer: 1 },
+  { id: "a1-04", level: "A1-A2", chunks: ["He works", "at a hospital", "every day."], q: "彼の仕事は？", options: ["毎日病院で働いている", "毎日病院に通院している", "週に一度病院に行く"], answer: 0 },
+  { id: "a1-05", level: "A1-A2", chunks: ["We are going", "to the park", "this afternoon."], q: "今日の午後の予定は？", options: ["今日の午後は家にいる", "今日の午後は公園に行く", "今日の朝は公園に行く"], answer: 1 },
+  { id: "a1-06", level: "A1-A2", chunks: ["My sister", "is studying", "for her exam."], q: "姉（妹）は今何をしている？", options: ["試験を受けている", "試験勉強をしている", "試験が終わった"], answer: 1 },
+  { id: "a1-07", level: "A1-A2", chunks: ["The shop", "opens at nine", "and closes at six."], q: "その店の営業時間は？", options: ["9時から18時まで", "6時から9時まで", "終日営業"], answer: 0 },
+  { id: "a1-08", level: "A1-A2", chunks: ["Can you", "call me back", "after five o'clock?"], q: "この人は何を求めている？", options: ["5時前に電話してほしい", "5時以降に折り返し電話してほしい", "電話に出てほしい"], answer: 1 },
+  { id: "a1-09", level: "A1-A2", chunks: ["I usually", "have breakfast", "before going to work."], q: "この人の習慣は？", options: ["仕事後に朝食を食べる", "朝食は食べない", "仕事前に朝食を食べる"], answer: 2 },
+  { id: "a1-10", level: "A1-A2", chunks: ["The weather", "is very cold", "today."], q: "今日の天気は？", options: ["今日はとても暑い", "今日はとても寒い", "今日は雨が降っている"], answer: 1 },
+  { id: "a1-11", level: "A1-A2", chunks: ["They are waiting", "for the train", "on the platform."], q: "彼らはどこで何をしている？", options: ["電車の中で座っている", "ホームで電車を待っている", "駅の外で話している"], answer: 1 },
+  { id: "a1-12", level: "A1-A2", chunks: ["Please", "leave a message", "after the tone."], q: "何をするよう言っている？", options: ["電話を切るよう言っている", "発信音の後にメッセージを残すよう言っている", "もう一度かけ直すよう言っている"], answer: 1 },
+  { id: "a1-13", level: "A1-A2", chunks: ["There is", "a coffee shop", "on the second floor."], q: "コーヒーショップはどこにある？", options: ["1階にある", "2階にある", "地下にある"], answer: 1 },
+  { id: "a1-14", level: "A1-A2", chunks: ["He is not here", "right now.", "Can I take a message?"], q: "この発言の要点は？", options: ["彼は今ここにいない。伝言を預かろうか？", "彼は今ここにいる", "後でかけ直してください"], answer: 0 },
+  { id: "a1-15", level: "A1-A2", chunks: ["Turn left", "at the traffic light", "and go straight."], q: "どう進む？", options: ["信号を右折してまっすぐ行く", "信号を左折してまっすぐ行く", "信号でUターンする"], answer: 1 },
 ];
+
+const SENTENCES_B1 = [
+  { id: "b1-01", level: "B1", chunks: ["The manager", "asked the team", "to finish the report", "by Friday."], q: "マネージャーはチームに何を頼んだ？", options: ["金曜までにレポートを完成させること", "チームのメンバーを金曜に集めること", "レポートの内容を金曜に確認すること"], answer: 0 },
+  { id: "b1-02", level: "B1", chunks: ["She decided", "to take a break", "after working", "for three hours."], q: "彼女はなぜ休憩を取った？", options: ["疲れていたから", "3時間働いた後だったから", "上司に言われたから"], answer: 1 },
+  { id: "b1-03", level: "B1", chunks: ["The train", "to Tokyo", "departs", "at nine fifteen."], q: "この文の要点は？", options: ["東京行きの電車が9:15に出発する", "東京から9:15に電車が到着する", "9:15に東京で電車に乗り換える"], answer: 0 },
+  { id: "b1-04", level: "B1", chunks: ["Please send", "the document", "to the client", "before the meeting."], q: "何をいつまでにする？", options: ["会議後にクライアントに連絡する", "会議前にクライアントに書類を送る", "書類を会議中に確認する"], answer: 1 },
+  { id: "b1-05", level: "B1", chunks: ["He has been", "living in Osaka", "for about", "five years."], q: "この文が伝えていることは？", options: ["彼は5年前に大阪を離れた", "彼は約5年間大阪に住んでいる", "彼は5年後に大阪に引っ越す"], answer: 1 },
+  { id: "b1-06", level: "B1", chunks: ["The new policy", "will be applied", "to all employees", "starting next month."], q: "新しいポリシーについて正しいのは？", options: ["先月から一部の社員に適用された", "来月から全社員に適用される", "来月から新入社員のみに適用される"], answer: 1 },
+  { id: "b1-07", level: "B1", chunks: ["Could you", "explain the difference", "between these two", "proposals?"], q: "話し手は何を求めている？", options: ["2つの提案の違いの説明", "2つの提案のどちらがいいかの判断", "新しい提案の作成"], answer: 0 },
+  { id: "b1-08", level: "B1", chunks: ["We should", "consider the budget", "before making", "a final decision."], q: "この文の主張は？", options: ["予算を増やすべきだ", "最終決定の前に予算を考慮すべきだ", "予算の決定を先送りすべきだ"], answer: 1 },
+  { id: "b1-09", level: "B1", chunks: ["The conference", "was attended", "by more than", "two hundred people."], q: "会議について何がわかる？", options: ["200人以上が参加した", "200人が招待された", "200人未満の参加だった"], answer: 0 },
+  { id: "b1-10", level: "B1", chunks: ["I need to", "pick up my daughter", "from school", "at three o'clock."], q: "話し手は何をしなければならない？", options: ["3時に学校に娘を送る", "3時に学校に娘を迎えに行く", "3時に娘と学校に行く"], answer: 1 },
+  { id: "b1-11", level: "B1", chunks: ["The restaurant", "on the corner", "is known for", "its fresh seafood."], q: "角のレストランの特徴は？", options: ["新鮮なシーフードで知られている", "角に新しくオープンした", "シーフード以外のメニューが豊富"], answer: 0 },
+  { id: "b1-12", level: "B1", chunks: ["If it rains", "tomorrow morning,", "we will postpone", "the outdoor event."], q: "この文が意味していることは？", options: ["明日雨なら屋外イベントを延期する", "明日の朝イベントが中止になった", "雨でも屋外イベントは実施する"], answer: 0 },
+  { id: "b1-13", level: "B1", chunks: ["The company", "is planning to", "open a new office", "in Singapore."], q: "会社の計画は？", options: ["シンガポールのオフィスを閉鎖する", "シンガポールに新しいオフィスを開く", "シンガポールから本社を移転する"], answer: 1 },
+  { id: "b1-14", level: "B1", chunks: ["Students who", "submitted their essays", "before the deadline", "received extra credit."], q: "追加単位をもらえたのは誰？", options: ["全ての学生", "締切前にエッセイを提出した学生", "エッセイを再提出した学生"], answer: 1 },
+  { id: "b1-15", level: "B1", chunks: ["Despite the delay,", "the project", "was completed", "within the original budget."], q: "プロジェクトについて何がわかる？", options: ["遅延があったが当初の予算内で完了した", "遅延のため予算が超過した", "予算内だったが未完成だった"], answer: 0 },
+  { id: "b1-16", level: "B1", chunks: ["The doctor", "recommended that", "he should exercise", "at least three times a week."], q: "医者の勧めは？", options: ["週に少なくとも3回運動すること", "3週間は運動を控えること", "毎日3時間運動すること"], answer: 0 },
+  { id: "b1-17", level: "B1", chunks: ["I'm afraid", "the deadline has passed", "and we can no longer", "accept new applications."], q: "この発言の要点は？", options: ["まだ申し込みを受け付けている", "締切が過ぎたため新規申し込みは不可", "締切を延長することになった"], answer: 1 },
+  { id: "b1-18", level: "B1", chunks: ["Would you mind", "lowering your voice?", "Some people", "are trying to concentrate."], q: "この発言の目的は？", options: ["声を大きくするよう頼んでいる", "静かにするよう頼んでいる", "部屋から出るよう求めている"], answer: 1 },
+  { id: "b1-19", level: "B1", chunks: ["The survey results", "suggest that", "most customers", "prefer online shopping."], q: "調査結果が示していることは？", options: ["ほとんどの顧客は店舗を好む", "ほとんどの顧客はオンラインショッピングを好む", "顧客の意見は二分されている"], answer: 1 },
+  { id: "b1-20", level: "B1", chunks: ["He was unable", "to attend the meeting", "due to", "a prior commitment."], q: "彼が会議に出席できなかった理由は？", options: ["他に先約があったから", "会議の時間を忘れたから", "体調不良だったから"], answer: 0 },
+];
+
+const ALL_SENTENCES = [...SENTENCES_A1A2, ...SENTENCES_B1];
 
 const SPEEDS = [
   { label: "ゆっくり", ms: 1800, emoji: "🐢" },
@@ -54,26 +78,81 @@ function speak(text) {
 
 // ─── localStorage helpers ───
 const STORE_KEY = "chunk-flash-log";
+const SRS_KEY = "chunk-flash-srs";
+
 function loadLog() {
   if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(STORE_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch {
-    return [];
-  }
+  try { return JSON.parse(localStorage.getItem(STORE_KEY) || "[]"); } catch { return []; }
 }
 function saveLog(log) {
   if (typeof window === "undefined") return;
-  try {
-    localStorage.setItem(STORE_KEY, JSON.stringify(log));
-  } catch (e) {
-    console.error("Failed to save log:", e);
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(log)); } catch (e) {}
+}
+function loadSRS() {
+  if (typeof window === "undefined") return {};
+  try { return JSON.parse(localStorage.getItem(SRS_KEY) || "{}"); } catch { return {}; }
+}
+function saveSRS(srs) {
+  if (typeof window === "undefined") return;
+  try { localStorage.setItem(SRS_KEY, JSON.stringify(srs)); } catch (e) {}
+}
+
+// ─── SRS (SM-2) helpers ───
+// quality: 5=perfect, 4=correct, 3=correct after replay, 1=wrong
+function srsUpdate(card, quality) {
+  const ef = Math.max(1.3, (card.ef || 2.5) + 0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+  let interval, reps;
+  if (quality < 3) {
+    interval = 1; reps = 0;
+  } else {
+    reps = (card.reps || 0) + 1;
+    if (reps === 1) interval = 1;
+    else if (reps === 2) interval = 6;
+    else interval = Math.round((card.interval || 1) * ef);
   }
+  const next = new Date();
+  next.setDate(next.getDate() + interval);
+  return { ef, interval, reps, nextReview: next.toISOString().slice(0, 10) };
+}
+
+function todayStr() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// Build session pool: due cards first, then new cards
+function buildPool(level, srs) {
+  const all = ALL_SENTENCES.filter(s => s.level === level);
+  const today = todayStr();
+  const due = shuffle(all.filter(s => srs[s.id] && srs[s.id].nextReview <= today));
+  const fresh = shuffle(all.filter(s => !srs[s.id]));
+
+  // Take due + new (up to 3 new per session), cap at 8
+  let pool = [...due, ...fresh.slice(0, Math.max(3, 8 - due.length))].slice(0, 8);
+
+  // Fallback: fill to 8 with remaining sentences
+  if (pool.length < 8) {
+    const inPool = new Set(pool.map(s => s.id));
+    const rest = shuffle(all.filter(s => !inPool.has(s.id)));
+    pool = [...pool, ...rest].slice(0, 8);
+  }
+  return shuffle(pool);
+}
+
+// Stats for HOME screen
+function getSRSStats(level, srs) {
+  const all = ALL_SENTENCES.filter(s => s.level === level);
+  const today = todayStr();
+  return {
+    due: all.filter(s => srs[s.id] && srs[s.id].nextReview <= today).length,
+    fresh: all.filter(s => !srs[s.id]).length,
+    learned: all.filter(s => srs[s.id] && (srs[s.id].reps || 0) >= 3).length,
+    total: all.length,
+  };
 }
 
 export default function ChunkFlash() {
   const [phase, setPhase] = useState(P.HOME);
+  const [level, setLevel] = useState(null);   // "A1-A2" | "B1"
   const [spd, setSpd] = useState(1);
   const [pool, setPool] = useState([]);
   const [ci, setCi] = useState(0);
@@ -87,6 +166,8 @@ export default function ChunkFlash() {
   const [drillChi, setDrillChi] = useState(0);
   const [drillDone, setDrillDone] = useState(false);
   const [log, setLog] = useState([]);
+  const [srs, setSrs] = useState({});
+  const [askedReplay, setAskedReplay] = useState(false); // "don't know" used this question
   const [aiResult, setAiResult] = useState("");
   const [ttsOn, setTtsOn] = useState(true);
   const [replayCount, setReplayCount] = useState(0);
@@ -97,6 +178,7 @@ export default function ChunkFlash() {
 
   useEffect(() => {
     setLog(loadLog());
+    setSrs(loadSRS());
     if (typeof window !== "undefined") {
       window.speechSynthesis?.getVoices();
       const saved = localStorage.getItem("chunk-flash-ai-key");
@@ -108,8 +190,10 @@ export default function ChunkFlash() {
   const ms = missed[mi];
 
   const start = () => {
-    const p = shuffle(SENTENCES).slice(0, 8);
-    setPool(p); setCi(0); setMissed([]); setMi(0); setReplayCount(0);
+    if (!level) return;
+    const currentSrs = loadSRS();
+    const p = buildPool(level, currentSrs);
+    setPool(p); setCi(0); setMissed([]); setMi(0); setReplayCount(0); setAskedReplay(false);
     setStats({ ok: 0, total: 0, rok: 0, rtotal: 0 });
     itemLog.current = [];
     setPhase(P.READY);
@@ -146,16 +230,39 @@ export default function ChunkFlash() {
 
   const beginRetest = (idx) => { setMi(idx); setRChi(0); setRSel(null); setPhase(P.RETEST_FLASH); };
 
+  // "わからない / もう一回聞く" — replays flash without recording an answer
+  const handleDontKnow = () => {
+    const sentenceStr = s.chunks.join(" ");
+    const idx = itemLog.current.findIndex(l => l.sentence === sentenceStr);
+    if (idx >= 0) {
+      itemLog.current[idx].dontKnows = (itemLog.current[idx].dontKnows || 0) + 1;
+    } else {
+      itemLog.current.push({ sentence: sentenceStr, id: s.id, level: s.level, correct: null, speed: SPEEDS[spd].ms, replays: 0, dontKnows: 1, drilled: false, retestCorrect: null, ts: Date.now() });
+    }
+    setAskedReplay(true);
+    beginReplay();
+  };
+
+  // Same for retest phase
+  const handleRetestDontKnow = () => {
+    setRChi(0);
+    setPhase(P.RETEST_FLASH);
+  };
+
   const answer = (i) => {
     if (sel !== null) return;
     setSel(i);
     const ok = i === s.answer;
     setStats((p) => ({ ...p, ok: p.ok + (ok ? 1 : 0), total: p.total + 1 }));
     if (!ok) setMissed((p) => [...p, s]);
-    itemLog.current.push({
-      sentence: s.chunks.join(" "), correct: ok, speed: SPEEDS[spd].ms,
-      replays: replayCount, drilled: false, retestCorrect: null, ts: Date.now(),
-    });
+    const sentenceStr = s.chunks.join(" ");
+    const existingIdx = itemLog.current.findIndex(l => l.sentence === sentenceStr);
+    if (existingIdx >= 0) {
+      itemLog.current[existingIdx].correct = ok;
+      itemLog.current[existingIdx].replays = replayCount;
+    } else {
+      itemLog.current.push({ sentence: sentenceStr, id: s.id, level: s.level, correct: ok, speed: SPEEDS[spd].ms, replays: replayCount, dontKnows: 0, drilled: false, retestCorrect: null, ts: Date.now() });
+    }
   };
 
   const retestAnswer = (i) => {
@@ -174,7 +281,7 @@ export default function ChunkFlash() {
   };
 
   const goNext = () => {
-    setSel(null); setChi(-1); setReplayCount(0);
+    setSel(null); setChi(-1); setReplayCount(0); setAskedReplay(false);
     if (ci + 1 >= pool.length) {
       if (missed.length > 0) beginRetest(0);
       else finishSession();
@@ -193,8 +300,27 @@ export default function ChunkFlash() {
   };
 
   const finishSession = () => {
+    // Update SRS for each item in the session
+    const newSrs = { ...loadSRS() };
+    itemLog.current.forEach(item => {
+      if (!item.id) return;
+      const existing = newSrs[item.id] || { ef: 2.5, interval: 0, reps: 0 };
+      // Use retest result if available (reflects learning after drill)
+      const finalCorrect = item.retestCorrect !== null ? item.retestCorrect : item.correct;
+      let quality;
+      if (finalCorrect === true) {
+        quality = (item.dontKnows > 0 || item.replays > 0) ? 3 : 4;
+      } else {
+        quality = 1;
+      }
+      newSrs[item.id] = srsUpdate(existing, quality);
+    });
+    setSrs(newSrs);
+    saveSRS(newSrs);
+
     const entry = {
       date: new Date().toISOString(),
+      level: level,
       speed: SPEEDS[spd].label,
       speedMs: SPEEDS[spd].ms,
       items: [...itemLog.current],
@@ -210,7 +336,8 @@ export default function ChunkFlash() {
     if (!aiKey) { setShowKeyInput(true); return; }
     setPhase(P.ANALYZING); setAiResult("");
     const recent = log.slice(-5);
-    const prompt = `以下はある英語学習者のチャンクフラッシュトレーニングのログです。この学習者はVersantのリスニングが弱く（GSE 17、CEFR <A1）、チャンク単位の意味処理速度が主なボトルネックです。
+    const levelLabel = level || "不明";
+    const prompt = `以下はある英語学習者のChunk Flashトレーニングのログです（学習レベル: ${levelLabel}）。学習者はVersantのリスニング処理が目標で、チャンク単位の意味処理速度が主なボトルネックです。
 
 ログを分析して、以下を簡潔に日本語で教えてください：
 1. どのタイプの文で躓いているか（パターンの特定）
@@ -229,7 +356,7 @@ ${JSON.stringify(recent, null, 2)}`;
           "anthropic-dangerous-direct-browser-access": "true",
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-sonnet-4-6",
           max_tokens: 1000,
           messages: [{ role: "user", content: prompt }],
         }),
@@ -265,47 +392,81 @@ ${JSON.stringify(recent, null, 2)}`;
 
   // ─── RENDERS ───
 
-  if (phase === P.HOME) return (
-    <div style={S.page}>
-      <div style={S.hero}>
-        <div style={S.logo}>⚡</div>
-        <h1 style={S.title}>Chunk Flash</h1>
-        <p style={S.sub}>チャンク処理速度トレーニング</p>
-      </div>
-      <div style={S.card}>
-        <Step n="1">チャンク単位でフラッシュ表示</Step>
-        <Step n="2">文全体の意味を問う質問に回答</Step>
-        <Step n="3">間違い → ドリル分解 → 再テスト</Step>
-      </div>
-      <div style={S.section}>
-        <SLabel>スピード</SLabel>
-        <div style={S.spdRow}>
-          {SPEEDS.map((sp, i) => (
-            <button key={i} onClick={() => setSpd(i)} style={{ ...S.chip, ...(spd === i ? S.chipOn : {}) }}>
-              <span>{sp.emoji}</span>
-              <span style={S.chipLbl}>{sp.label}</span>
-              <span style={S.chipMs}>{sp.ms}ms</span>
-            </button>
-          ))}
+  if (phase === P.HOME) {
+    const stats = level ? getSRSStats(level, srs) : null;
+    return (
+      <div style={S.page}>
+        <div style={S.hero}>
+          <div style={S.logo}>⚡</div>
+          <h1 style={S.title}>Chunk Flash</h1>
+          <p style={S.sub}>チャンク処理速度トレーニング</p>
         </div>
-      </div>
-      <div style={S.section}>
-        <SLabel>読み上げ</SLabel>
-        <button onClick={() => setTtsOn(!ttsOn)} style={{ ...S.ttsBtn, ...(ttsOn ? S.ttsBtnOn : {}) }}>
-          {ttsOn ? "🔊 ON" : "🔇 OFF"}
+        <div style={S.card}>
+          <Step n="1">チャンク単位でフラッシュ表示</Step>
+          <Step n="2">文全体の意味を問う質問に回答</Step>
+          <Step n="3">間違い → ドリル分解 → 再テスト</Step>
+        </div>
+
+        {/* Level selector */}
+        <div style={S.section}>
+          <SLabel>レベル</SLabel>
+          <div style={S.levelRow}>
+            <button onClick={() => setLevel("A1-A2")} style={{ ...S.levelBtn, ...(level === "A1-A2" ? S.levelBtnOn : {}) }}>
+              <span style={S.levelBadge}>A1–A2</span>
+              <span style={S.levelName}>Versant A1-A2</span>
+              <span style={S.levelHint}>入門・基礎レベル</span>
+            </button>
+            <button onClick={() => setLevel("B1")} style={{ ...S.levelBtn, ...(level === "B1" ? S.levelBtnOn : {}) }}>
+              <span style={S.levelBadge}>B1</span>
+              <span style={S.levelName}>Versant B1</span>
+              <span style={S.levelHint}>中級レベル</span>
+            </button>
+          </div>
+        </div>
+
+        {/* SRS progress */}
+        {stats && (
+          <div style={S.srsRow}>
+            <SrsBadge n={stats.due} label="復習" color="#ff9e44" />
+            <SrsBadge n={stats.fresh} label="新規" color="#ffd866" />
+            <SrsBadge n={stats.learned} label={`習得済 /${stats.total}`} color="#5dcaa5" />
+          </div>
+        )}
+
+        <div style={S.section}>
+          <SLabel>スピード</SLabel>
+          <div style={S.spdRow}>
+            {SPEEDS.map((sp, i) => (
+              <button key={i} onClick={() => setSpd(i)} style={{ ...S.chip, ...(spd === i ? S.chipOn : {}) }}>
+                <span>{sp.emoji}</span>
+                <span style={S.chipLbl}>{sp.label}</span>
+                <span style={S.chipMs}>{sp.ms}ms</span>
+              </button>
+            ))}
+          </div>
+        </div>
+        <div style={S.section}>
+          <SLabel>読み上げ</SLabel>
+          <button onClick={() => setTtsOn(!ttsOn)} style={{ ...S.ttsBtn, ...(ttsOn ? S.ttsBtnOn : {}) }}>
+            {ttsOn ? "🔊 ON" : "🔇 OFF"}
+          </button>
+        </div>
+        <button onClick={start} style={{ ...S.primary, opacity: level ? 1 : 0.4, cursor: level ? "pointer" : "not-allowed" }} disabled={!level}>
+          スタート
         </button>
+        {!level && <p style={{ fontSize: "0.7rem", color: "#504e47", marginTop: "0.5rem" }}>↑ レベルを選んでください</p>}
+        {log.length > 0 && (
+          <button onClick={() => { setAiResult(""); setPhase(P.LOG); }} style={S.ghost}>📊 学習ログ</button>
+        )}
       </div>
-      <button onClick={start} style={S.primary}>スタート（8問）</button>
-      {log.length > 0 && (
-        <button onClick={() => { setAiResult(""); setPhase(P.LOG); }} style={S.ghost}>📊 学習ログ</button>
-      )}
-    </div>
-  );
+    );
+  }
 
   if (phase === P.READY) return (
     <div style={S.page}>
       <Bar v={ci / pool.length} />
       <div style={S.mid}>
+        <p style={S.levelTag}>{level}</p>
         <p style={S.dim}>{ci + 1} / {pool.length}</p>
         <button onClick={beginFlash} style={S.flashBtn}>タップして表示</button>
       </div>
@@ -343,6 +504,12 @@ ${JSON.stringify(recent, null, 2)}`;
               }
               return <button key={i} onClick={() => answer(i)} style={st} disabled={done}>{o}</button>;
             })}
+            {/* わからない / もう一回聞く — visible before answering, hidden after used once */}
+            {!done && !askedReplay && (
+              <button onClick={handleDontKnow} style={S.optDontKnow}>
+                🔁 わからない／もう一回聞く
+              </button>
+            )}
           </div>
           {done && (
             <div style={S.after}>
@@ -426,6 +593,12 @@ ${JSON.stringify(recent, null, 2)}`;
               }
               return <button key={i} onClick={() => retestAnswer(i)} style={st} disabled={done}>{o}</button>;
             })}
+            {/* わからない in retest */}
+            {!done && (
+              <button onClick={handleRetestDontKnow} style={S.optDontKnow}>
+                🔁 わからない／もう一回聞く
+              </button>
+            )}
           </div>
           {done && (
             <div style={S.after}>
@@ -445,6 +618,8 @@ ${JSON.stringify(recent, null, 2)}`;
     const rpct = stats.rtotal ? Math.round((stats.rok / stats.rtotal) * 100) : null;
     const replayed = itemLog.current.filter((i) => i.replays > 0);
     const drilled = itemLog.current.filter((i) => i.drilled);
+    const dontKnows = itemLog.current.filter((i) => (i.dontKnows || 0) > 0);
+    const srsStats = level ? getSRSStats(level, srs) : null;
     return (
       <div style={S.page}>
         <div style={S.resWrap}>
@@ -457,7 +632,11 @@ ${JSON.stringify(recent, null, 2)}`;
           </div>
           {replayed.length > 0 && <p style={S.resMeta}>↻ リプレイ: {replayed.length}件</p>}
           {drilled.length > 0 && <p style={S.resMeta}>🔨 ドリル: {drilled.length}件</p>}
+          {dontKnows.length > 0 && <p style={S.resMeta}>🔁 もう一回: {dontKnows.length}件</p>}
           {rpct !== null && rpct > pct && <p style={{ ...S.resMeta, color: "#5dcaa5" }}>ドリル後に正答率UP — 分解→再処理が効いてる</p>}
+          {srsStats && (
+            <p style={S.resMeta}>習得済 {srsStats.learned}/{srsStats.total}文 · 次回の復習 {srsStats.due}件</p>
+          )}
           <div style={S.advice}>
             {pct >= 80 ? "安定してる。スピードを上げてみよう。" : pct >= 50 ? "半分以上OK。もう数セッション回すと安定する。" : "この速度はまだきつい。一段下げてドリルサイクルを回そう。"}
           </div>
@@ -485,7 +664,10 @@ ${JSON.stringify(recent, null, 2)}`;
                   const replayCount = entry.items?.filter((i) => i.replays > 0).length || 0;
                   return (
                     <div key={idx} style={S.logEntry}>
-                      <div style={S.logDate}>{new Date(entry.date).toLocaleDateString("ja-JP", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</div>
+                      <div style={S.logDate}>
+                        {new Date(entry.date).toLocaleDateString("ja-JP", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}
+                        {entry.level && <span style={S.logLevel}> {entry.level}</span>}
+                      </div>
                       <div style={S.logStats}>
                         <span>{entry.speed} ({entry.speedMs}ms)</span>
                         <span>正答 {firstPct}%</span>
@@ -604,6 +786,15 @@ function StatCard({ label, val, sub }) {
   );
 }
 
+function SrsBadge({ n, label, color }) {
+  return (
+    <div style={S.srsBadge}>
+      <span style={{ ...S.srsBadgeN, color }}>{n}</span>
+      <span style={S.srsBadgeL}>{label}</span>
+    </div>
+  );
+}
+
 // ─── Styles ───
 const S = {
   page: { minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "2rem 1.25rem", fontFamily: "'IBM Plex Sans','Noto Sans JP',system-ui,sans-serif", background: "#0b0b11", color: "#ddd9d0" },
@@ -613,6 +804,19 @@ const S = {
   sub: { fontSize: "0.78rem", color: "#6b6860", margin: 0, letterSpacing: "0.05em" },
   card: { background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: 14, padding: "1.1rem 1.3rem", maxWidth: 380, width: "100%", marginBottom: "1.25rem" },
   section: { maxWidth: 380, width: "100%", marginBottom: "1rem" },
+  // Level selector
+  levelRow: { display: "flex", gap: 8 },
+  levelBtn: { display: "flex", flexDirection: "column", alignItems: "center", gap: 3, padding: "0.75rem 0.6rem", flex: 1, background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.05)", borderRadius: 12, cursor: "pointer", transition: "all 0.15s" },
+  levelBtnOn: { background: "rgba(255,216,102,0.06)", border: "1px solid rgba(255,216,102,0.25)" },
+  levelBadge: { fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.05em", color: "#ffd866", background: "rgba(255,216,102,0.08)", padding: "1px 7px", borderRadius: 4 },
+  levelName: { fontSize: "0.82rem", fontWeight: 600, color: "#ccc8c0" },
+  levelHint: { fontSize: "0.6rem", color: "#504e47" },
+  // SRS badges
+  srsRow: { display: "flex", gap: 8, maxWidth: 380, width: "100%", marginBottom: "0.8rem" },
+  srsBadge: { display: "flex", flexDirection: "column", alignItems: "center", gap: 2, flex: 1, padding: "0.5rem 0.3rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: 8 },
+  srsBadgeN: { fontSize: "1.1rem", fontWeight: 700 },
+  srsBadgeL: { fontSize: "0.55rem", color: "#504e47", letterSpacing: "0.03em" },
+  // Speed
   spdRow: { display: "flex", gap: 5 },
   chip: { display: "flex", flexDirection: "column", alignItems: "center", gap: 1, padding: "0.5rem 0.4rem", background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.04)", borderRadius: 9, color: "#7a776f", cursor: "pointer", flex: 1, fontSize: "0.75rem", transition: "all 0.15s" },
   chipOn: { background: "rgba(255,216,102,0.06)", border: "1px solid rgba(255,216,102,0.22)", color: "#ffd866" },
@@ -624,6 +828,7 @@ const S = {
   ghost: { padding: "0.55rem 1.2rem", fontSize: "0.8rem", background: "none", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 10, color: "#8a8780", cursor: "pointer", marginTop: "0.5rem" },
   ghostSm: { padding: "0.5rem 1rem", fontSize: "0.78rem", background: "none", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 8, color: "#8a8780", cursor: "pointer" },
   mid: { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, textAlign: "center" },
+  levelTag: { fontSize: "0.6rem", color: "#504e47", letterSpacing: "0.1em", textTransform: "uppercase", margin: "0 0 0.2rem" },
   dim: { fontSize: "0.75rem", color: "#504e47", letterSpacing: "0.08em", marginBottom: "0.7rem" },
   flashBtn: { padding: "0.75rem 2rem", fontSize: "0.88rem", fontWeight: 600, background: "rgba(255,216,102,0.07)", color: "#ffd866", border: "1px solid rgba(255,216,102,0.18)", borderRadius: 10, cursor: "pointer" },
   chunk: { fontSize: "1.7rem", fontWeight: 600, color: "#fff", textShadow: "0 0 28px rgba(255,216,102,0.1)", lineHeight: 1.4 },
@@ -633,6 +838,8 @@ const S = {
   opt: { padding: "0.75rem 1rem", fontSize: "0.85rem", lineHeight: 1.5, background: "rgba(255,255,255,0.025)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: 10, color: "#b5b2aa", cursor: "pointer", textAlign: "left", transition: "all 0.15s" },
   optOk: { background: "rgba(93,202,165,0.1)", border: "1px solid rgba(93,202,165,0.3)", color: "#5dcaa5" },
   optBad: { background: "rgba(240,80,80,0.07)", border: "1px solid rgba(240,80,80,0.2)", color: "#f09595" },
+  // "わからない" button
+  optDontKnow: { padding: "0.65rem 1rem", fontSize: "0.8rem", lineHeight: 1.5, background: "rgba(255,255,255,0.01)", border: "1px dashed rgba(255,255,255,0.07)", borderRadius: 10, color: "#6b6860", cursor: "pointer", textAlign: "center", transition: "all 0.15s" },
   after: { marginTop: "0.8rem", display: "flex", flexDirection: "column", alignItems: "center", gap: "0.7rem" },
   fullBox: { fontSize: "0.78rem", color: "#7a776f", padding: "0.6rem 0.9rem", background: "rgba(255,255,255,0.02)", borderRadius: 8, lineHeight: 1.7, fontFamily: "'IBM Plex Mono',monospace" },
   nextBtn: { padding: "0.6rem 1.5rem", fontSize: "0.82rem", fontWeight: 600, background: "rgba(255,216,102,0.07)", color: "#ffd866", border: "1px solid rgba(255,216,102,0.15)", borderRadius: 10, cursor: "pointer" },
@@ -662,6 +869,7 @@ const S = {
   logScroll: { maxHeight: 320, overflowY: "auto", marginBottom: "1rem", textAlign: "left" },
   logEntry: { padding: "0.7rem 0.8rem", background: "rgba(255,255,255,0.02)", borderRadius: 8, marginBottom: 6, border: "1px solid rgba(255,255,255,0.03)" },
   logDate: { fontSize: "0.7rem", color: "#6b6860", marginBottom: 4 },
+  logLevel: { fontSize: "0.62rem", color: "#ffd866", background: "rgba(255,216,102,0.07)", padding: "0 5px", borderRadius: 3, marginLeft: 4 },
   logStats: { fontSize: "0.75rem", color: "#9a968e", display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 4 },
   logMiss: { fontSize: "0.72rem", color: "#f09595", opacity: 0.7, marginTop: 2, fontFamily: "'IBM Plex Mono',monospace" },
   aiBox: { marginTop: "1rem", textAlign: "left", padding: "1rem", background: "rgba(255,255,255,0.02)", borderRadius: 10, border: "1px solid rgba(255,255,255,0.04)" },
