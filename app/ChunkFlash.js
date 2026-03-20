@@ -167,7 +167,8 @@ export default function ChunkFlash() {
   const [drillDone, setDrillDone] = useState(false);
   const [log, setLog] = useState([]);
   const [srs, setSrs] = useState({});
-  const [askedReplay, setAskedReplay] = useState(false); // "don't know" used this question
+  const [askedReplay, setAskedReplay] = useState(false);       // "don't know" used this question
+  const [retestAskedReplay, setRetestAskedReplay] = useState(false); // same for retest
   const [aiResult, setAiResult] = useState("");
   const [ttsOn, setTtsOn] = useState(true);
   const [replayCount, setReplayCount] = useState(0);
@@ -228,9 +229,9 @@ export default function ChunkFlash() {
     return () => clearTimeout(tmr.current);
   }, [phase, rChi, spd, mi, missed, ttsOn]);
 
-  const beginRetest = (idx) => { setMi(idx); setRChi(0); setRSel(null); setPhase(P.RETEST_FLASH); };
+  const beginRetest = (idx) => { setMi(idx); setRChi(0); setRSel(null); setRetestAskedReplay(false); setPhase(P.RETEST_FLASH); };
 
-  // "わからない / もう一回聞く" — replays flash without recording an answer
+  // "わからない / もう一回聞く" — 1回目: リプレイ
   const handleDontKnow = () => {
     const sentenceStr = s.chunks.join(" ");
     const idx = itemLog.current.findIndex(l => l.sentence === sentenceStr);
@@ -243,10 +244,40 @@ export default function ChunkFlash() {
     beginReplay();
   };
 
-  // Same for retest phase
+  // "わからない" — 2回目: スキップ（不正解として記録し次へ）
+  const handleSkip = () => {
+    const sentenceStr = s.chunks.join(" ");
+    const existingIdx = itemLog.current.findIndex(l => l.sentence === sentenceStr);
+    if (existingIdx >= 0) {
+      itemLog.current[existingIdx].correct = false;
+      itemLog.current[existingIdx].skipped = true;
+    } else {
+      itemLog.current.push({ sentence: sentenceStr, id: s.id, level: s.level, correct: false, speed: SPEEDS[spd].ms, replays: replayCount, dontKnows: 1, drilled: false, skipped: true, retestCorrect: null, ts: Date.now() });
+    }
+    setStats(p => ({ ...p, total: p.total + 1 }));
+    const newMissed = [...missed, s];
+    setMissed(newMissed);
+    // goNextと同じだが、newMissedを直接使う（stale state回避）
+    setSel(null); setChi(-1); setReplayCount(0); setAskedReplay(false);
+    if (ci + 1 >= pool.length) {
+      if (newMissed.length > 0) beginRetest(0);
+      else finishSession();
+    } else { setCi(p => p + 1); setPhase(P.READY); }
+  };
+
+  // 再テスト: 1回目はリプレイ
   const handleRetestDontKnow = () => {
+    setRetestAskedReplay(true);
     setRChi(0);
     setPhase(P.RETEST_FLASH);
+  };
+
+  // 再テスト: 2回目はスキップ（不正解として次へ）
+  const handleRetestSkip = () => {
+    const idx = itemLog.current.findIndex(l => l.sentence === ms.chunks.join(" "));
+    if (idx >= 0) itemLog.current[idx].retestCorrect = false;
+    setStats(p => ({ ...p, rtotal: p.rtotal + 1 }));
+    nextRetest();
   };
 
   const answer = (i) => {
@@ -281,7 +312,7 @@ export default function ChunkFlash() {
   };
 
   const goNext = () => {
-    setSel(null); setChi(-1); setReplayCount(0); setAskedReplay(false);
+    setSel(null); setChi(-1); setReplayCount(0); setAskedReplay(false); setRetestAskedReplay(false);
     if (ci + 1 >= pool.length) {
       if (missed.length > 0) beginRetest(0);
       else finishSession();
@@ -504,10 +535,10 @@ ${JSON.stringify(recent, null, 2)}`;
               }
               return <button key={i} onClick={() => answer(i)} style={st} disabled={done}>{o}</button>;
             })}
-            {/* わからない / もう一回聞く — visible before answering, hidden after used once */}
-            {!done && !askedReplay && (
-              <button onClick={handleDontKnow} style={S.optDontKnow}>
-                🔁 わからない／もう一回聞く
+            {/* わからない: 1回目→リプレイ、2回目→スキップ */}
+            {!done && (
+              <button onClick={askedReplay ? handleSkip : handleDontKnow} style={S.optDontKnow}>
+                {askedReplay ? "⏭ わからない（スキップ）" : "🔁 わからない／もう一回聞く"}
               </button>
             )}
           </div>
@@ -593,10 +624,10 @@ ${JSON.stringify(recent, null, 2)}`;
               }
               return <button key={i} onClick={() => retestAnswer(i)} style={st} disabled={done}>{o}</button>;
             })}
-            {/* わからない in retest */}
+            {/* わからない in retest: 1回目→リプレイ、2回目→スキップ */}
             {!done && (
-              <button onClick={handleRetestDontKnow} style={S.optDontKnow}>
-                🔁 わからない／もう一回聞く
+              <button onClick={retestAskedReplay ? handleRetestSkip : handleRetestDontKnow} style={S.optDontKnow}>
+                {retestAskedReplay ? "⏭ わからない（スキップ）" : "🔁 わからない／もう一回聞く"}
               </button>
             )}
           </div>
