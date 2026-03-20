@@ -177,6 +177,11 @@ export default function ChunkFlash() {
   const tmr = useRef(null);
   const itemLog = useRef([]);
 
+  // フェーズ遷移時に音声を自動停止
+  useEffect(() => {
+    if (typeof window !== "undefined") window.speechSynthesis?.cancel();
+  }, [phase]);
+
   useEffect(() => {
     setLog(loadLog());
     setSrs(loadSRS());
